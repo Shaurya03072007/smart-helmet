@@ -2,23 +2,25 @@ import { RawMpuPacket, EstimatedNavigationState, TrajectoryPoint } from './types
 
 /**
  * NavigationEngine:
- * Estimates 2D Cartesian position (X, Y in meters) and orientation (Heading in degrees)
+ * Estimates 2D Cartesian position (X, Y in centimeters) and orientation (Heading in degrees)
  * from raw MPU6050 accelerometer and gyroscope data.
  * 
  * IMPORTANT:
  * - Operates in local Cartesian frame: (0,0) is START origin.
- * - +X = East (meters)
- * - +Y = North (meters)
+ * - +X = East (centimeters)
+ * - +Y = North (centimeters)
+ * - Speed: cm/s
+ * - Total Distance: centimeters
  * - Heading: 0° = North, 90° = East, 180° = South, 270° = West.
  * - Explicitly labeled as ESTIMATED dead-reckoning.
  */
 export class NavigationEngine {
   private deviceId: string;
-  private x: number = 0;
-  private y: number = 0;
+  private x: number = 0; // centimeters
+  private y: number = 0; // centimeters
   private heading: number = 0; // 0 - 360 degrees
-  private speed: number = 0; // m/s
-  private totalDistance: number = 0; // meters
+  private speed: number = 0; // cm/s
+  private totalDistance: number = 0; // centimeters
   private stepCount: number = 0;
   private lastTimestamp: number = 0;
   private originTime: number = Date.now();
@@ -42,7 +44,7 @@ export class NavigationEngine {
   private readonly STEP_THRESHOLD_G = 0.16; // Peak over 1g required for step
 
   // Motion smoothing
-  private velocity: number = 0; // m/s
+  private velocity: number = 0; // cm/s
   private motionDetected: boolean = false;
 
   constructor(deviceId: string = "helmet-01") {
@@ -105,12 +107,12 @@ export class NavigationEngine {
       }
     }
 
-    // --- 2. MOVEMENT / STEP / DISPLACEMENT ESTIMATION ---
+    // --- 2. MOVEMENT / STEP / DISPLACEMENT ESTIMATION (IN CENTIMETERS) ---
     this.motionDetected = dynamicAccel > 0.08 || Math.abs(yawRateDegPerSec) > 3.0;
 
-    let displacementMeters = 0;
+    let displacementCm = 0;
 
-    // A) Step Detection Model (Pedestrian Dead Reckoning for Wearables/Helmets)
+    // A) Step Detection Model (Calibrated for Centimeter Scale)
     const timeSinceLastStep = now - this.lastStepTime;
     if (dynamicAccel > this.STEP_THRESHOLD_G && !this.isStepArmed) {
       this.isStepArmed = true;
@@ -120,44 +122,44 @@ export class NavigationEngine {
       this.lastStepTime = now;
       this.stepCount++;
 
-      // Adaptive step length estimation (0.60m to 0.85m based on acceleration intensity)
-      const stepLength = Math.min(0.85, Math.max(0.60, 0.60 + dynamicAccel * 0.4));
-      displacementMeters = stepLength;
-    } else if (this.motionDetected && dynamicAccel > 0.12 && timeSinceLastStep > this.MIN_STEP_INTERVAL_MS * 1.5) {
-      // B) Continuous Micro-displacement for non-step movement (e.g. smooth sliding or walking without sharp peaks)
-      displacementMeters = Math.min(0.25, dynamicAccel * 0.5 * dt);
+      // Adaptive step length in centimeters (e.g. 45cm to 75cm based on acceleration intensity)
+      const stepLengthCm = Math.min(75, Math.max(45, 45 + dynamicAccel * 40));
+      displacementCm = stepLengthCm;
+    } else if (this.motionDetected && dynamicAccel > 0.10 && timeSinceLastStep > this.MIN_STEP_INTERVAL_MS * 1.2) {
+      // B) Continuous / Micro-displacement for benchtop, hand, or smooth motion (in centimeters)
+      displacementCm = Math.min(25, dynamicAccel * 50 * dt);
     }
 
-    // Update velocity and speed
-    if (displacementMeters > 0 && dt > 0) {
-      const instantaneousSpeed = displacementMeters / dt;
+    // Update velocity and speed in cm/s
+    if (displacementCm > 0 && dt > 0) {
+      const instantaneousSpeed = displacementCm / dt; // cm/s
       // Exponential moving average for smooth speed display
       this.velocity = this.velocity * 0.6 + instantaneousSpeed * 0.4;
     } else {
       // Zero Velocity Update (ZUPT): decelerate quickly to zero when at rest
-      this.velocity = Math.max(0, this.velocity * 0.75 - 0.05);
+      this.velocity = Math.max(0, this.velocity * 0.75 - 0.5);
     }
-    this.speed = Number(this.velocity.toFixed(2));
+    this.speed = Number(this.velocity.toFixed(1));
 
-    // --- 3. 2D COORDINATE POSITION UPDATE ---
+    // --- 3. 2D COORDINATE POSITION UPDATE (IN CENTIMETERS) ---
     // Heading angle in radians (0° = North/+Y, 90° = East/+X)
-    if (displacementMeters > 0) {
+    if (displacementCm > 0) {
       const headingRad = (this.heading * Math.PI) / 180.0;
-      const dx = displacementMeters * Math.sin(headingRad);
-      const dy = displacementMeters * Math.cos(headingRad);
+      const dx = displacementCm * Math.sin(headingRad);
+      const dy = displacementCm * Math.cos(headingRad);
 
       this.x += dx;
       this.y += dy;
-      this.totalDistance += displacementMeters;
+      this.totalDistance += displacementCm;
     }
 
     const estimated: EstimatedNavigationState = {
       deviceId: raw.deviceId || this.deviceId,
-      x: Number(this.x.toFixed(2)),
-      y: Number(this.y.toFixed(2)),
+      x: Number(this.x.toFixed(1)),
+      y: Number(this.y.toFixed(1)),
       heading: Number(this.heading.toFixed(1)),
       speed: this.speed,
-      distance: Number(this.totalDistance.toFixed(2)),
+      distance: Number(this.totalDistance.toFixed(1)),
       steps: this.stepCount,
       motionDetected: this.motionDetected,
       timestamp: now,
@@ -178,11 +180,11 @@ export class NavigationEngine {
   public getState(): EstimatedNavigationState {
     return {
       deviceId: this.deviceId,
-      x: Number(this.x.toFixed(2)),
-      y: Number(this.y.toFixed(2)),
+      x: Number(this.x.toFixed(1)),
+      y: Number(this.y.toFixed(1)),
       heading: Number(this.heading.toFixed(1)),
       speed: this.speed,
-      distance: Number(this.totalDistance.toFixed(2)),
+      distance: Number(this.totalDistance.toFixed(1)),
       steps: this.stepCount,
       motionDetected: this.motionDetected,
       timestamp: Date.now(),

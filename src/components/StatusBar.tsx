@@ -24,12 +24,12 @@ export function StatusBar({
           <MapPin className="w-3.5 h-3.5 text-sky-400" />
           <span className="text-slate-400">X:</span>
           <span className="font-bold text-sky-300">
-            {navState.x >= 0 ? `+${navState.x.toFixed(2)}` : navState.x.toFixed(2)}m
+            {navState.x >= 0 ? `+${navState.x.toFixed(1)}` : navState.x.toFixed(1)}cm
           </span>
           <span className="text-slate-600">|</span>
           <span className="text-slate-400">Y:</span>
           <span className="font-bold text-sky-300">
-            {navState.y >= 0 ? `+${navState.y.toFixed(2)}` : navState.y.toFixed(2)}m
+            {navState.y >= 0 ? `+${navState.y.toFixed(1)}` : navState.y.toFixed(1)}cm
           </span>
         </div>
 
@@ -41,7 +41,7 @@ export function StatusBar({
 
         <div className="hidden sm:flex items-center space-x-1.5 text-slate-400">
           <span>Dist:</span>
-          <span className="text-slate-200 font-semibold">{navState.distance.toFixed(1)}m</span>
+          <span className="text-slate-200 font-semibold">{navState.distance.toFixed(1)}cm</span>
         </div>
       </div>
 

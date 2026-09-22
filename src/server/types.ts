@@ -11,11 +11,11 @@ export interface RawMpuPacket {
 
 export interface EstimatedNavigationState {
   deviceId: string;
-  x: number; // meters East/West (+X = East)
-  y: number; // meters North/South (+Y = North)
+  x: number; // centimeters East/West (+X = East)
+  y: number; // centimeters North/South (+Y = North)
   heading: number; // degrees 0-359.9°
-  speed: number; // meters per second
-  distance: number; // total accumulated meters
+  speed: number; // centimeters per second (cm/s)
+  distance: number; // total accumulated centimeters (cm)
   steps: number; // detected movement steps
   motionDetected: boolean;
   timestamp: number;

@@ -155,7 +155,7 @@ export function DebugPanel({
                   <div className="grid grid-cols-2 gap-2 text-slate-300">
                     <div className="bg-slate-900/60 p-2 rounded">
                       <div className="text-[10px] text-slate-400">X Position:</div>
-                      <div className="text-base font-bold text-sky-300">{estimated.x} m</div>
+                      <div className="text-base font-bold text-sky-300">{estimated.x} cm</div>
                     </div>
                     <div className="bg-slate-900/60 p-2 rounded">
                       <div className="text-[10px] text-slate-400">Heading:</div>
@@ -163,15 +163,15 @@ export function DebugPanel({
                     </div>
                     <div className="bg-slate-900/60 p-2 rounded">
                       <div className="text-[10px] text-slate-400">Y Position:</div>
-                      <div className="text-base font-bold text-sky-300">{estimated.y} m</div>
+                      <div className="text-base font-bold text-sky-300">{estimated.y} cm</div>
                     </div>
                     <div className="bg-slate-900/60 p-2 rounded">
                       <div className="text-[10px] text-slate-400">Est. Speed:</div>
-                      <div className="text-base font-bold text-emerald-400">{estimated.speed} m/s</div>
+                      <div className="text-base font-bold text-emerald-400">{estimated.speed} cm/s</div>
                     </div>
                     <div className="bg-slate-900/60 p-2 rounded">
                       <div className="text-[10px] text-slate-400">Total Distance:</div>
-                      <div className="text-base font-bold text-slate-200">{estimated.distance} m</div>
+                      <div className="text-base font-bold text-slate-200">{estimated.distance} cm</div>
                     </div>
                     <div className="bg-slate-900/60 p-2 rounded">
                       <div className="text-[10px] text-slate-400">Step Cadence:</div>

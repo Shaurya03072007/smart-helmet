@@ -19,7 +19,7 @@ export function EstimatedNavPanel({ navState }: EstimatedNavPanelProps) {
               NAVIGATION ENGINE
             </div>
             <div className="text-[10px] text-sky-400 font-semibold tracking-wide">
-              LOCAL 2D CARTESIAN
+              LOCAL 2D CARTESIAN (cm)
             </div>
           </div>
         </div>
@@ -34,16 +34,16 @@ export function EstimatedNavPanel({ navState }: EstimatedNavPanelProps) {
         </span>
       </div>
 
-      {/* Position Coordinates (X, Y) */}
+      {/* Position Coordinates (X, Y in Centimeters) */}
       <div className="grid grid-cols-2 gap-2.5">
         <div className="bg-slate-950/70 p-3 rounded-lg border border-slate-800/80">
           <div className="text-[10px] text-slate-400 mb-1 flex items-center justify-between">
             <span>X (EAST / WEST)</span>
-            <span className="text-[9px] text-slate-500">meters</span>
+            <span className="text-[9px] text-sky-400 font-semibold">centimeters</span>
           </div>
           <div className="text-2xl font-black text-sky-300 tracking-tight">
-            {navState.x >= 0 ? `+${navState.x.toFixed(2)}` : navState.x.toFixed(2)}
-            <span className="text-sm font-normal text-slate-400 ml-1">m</span>
+            {navState.x >= 0 ? `+${navState.x.toFixed(1)}` : navState.x.toFixed(1)}
+            <span className="text-sm font-normal text-slate-400 ml-1">cm</span>
           </div>
           <div className="text-[10px] text-slate-400 mt-1">
             {navState.x > 0 ? "East of Origin" : navState.x < 0 ? "West of Origin" : "At Origin"}
@@ -53,11 +53,11 @@ export function EstimatedNavPanel({ navState }: EstimatedNavPanelProps) {
         <div className="bg-slate-950/70 p-3 rounded-lg border border-slate-800/80">
           <div className="text-[10px] text-slate-400 mb-1 flex items-center justify-between">
             <span>Y (NORTH / SOUTH)</span>
-            <span className="text-[9px] text-slate-500">meters</span>
+            <span className="text-[9px] text-sky-400 font-semibold">centimeters</span>
           </div>
           <div className="text-2xl font-black text-sky-300 tracking-tight">
-            {navState.y >= 0 ? `+${navState.y.toFixed(2)}` : navState.y.toFixed(2)}
-            <span className="text-sm font-normal text-slate-400 ml-1">m</span>
+            {navState.y >= 0 ? `+${navState.y.toFixed(1)}` : navState.y.toFixed(1)}
+            <span className="text-sm font-normal text-slate-400 ml-1">cm</span>
           </div>
           <div className="text-[10px] text-slate-400 mt-1">
             {navState.y > 0 ? "North of Origin" : navState.y < 0 ? "South of Origin" : "At Origin"}
@@ -111,14 +111,14 @@ export function EstimatedNavPanel({ navState }: EstimatedNavPanelProps) {
         <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800/70">
           <div className="text-[10px] text-slate-400 mb-0.5">DISTANCE</div>
           <div className="text-base font-bold text-slate-100">
-            {navState.distance.toFixed(1)} <span className="text-[10px] font-normal text-slate-400">m</span>
+            {navState.distance.toFixed(1)} <span className="text-[10px] font-normal text-slate-400">cm</span>
           </div>
         </div>
 
         <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800/70">
           <div className="text-[10px] text-slate-400 mb-0.5">SPEED</div>
           <div className="text-base font-bold text-slate-100">
-            {navState.speed.toFixed(2)} <span className="text-[10px] font-normal text-slate-400">m/s</span>
+            {navState.speed.toFixed(1)} <span className="text-[10px] font-normal text-slate-400">cm/s</span>
           </div>
         </div>
 
@@ -143,7 +143,7 @@ export function EstimatedNavPanel({ navState }: EstimatedNavPanelProps) {
 
       {/* Methodology Note */}
       <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2 text-[10px] text-slate-400 leading-relaxed">
-        <strong>Engine Method:</strong> Gyroscopic rate integration (Gz / 131 LSB/°/s) for yaw heading orientation + Accelerometer inertial step/cadence displacement model.
+        <strong>Engine Method:</strong> Gyroscopic rate integration (Gz / 131 LSB/°/s) for yaw heading orientation + Accelerometer inertial motion model calibrated in centimeters (cm).
       </div>
     </div>
   );

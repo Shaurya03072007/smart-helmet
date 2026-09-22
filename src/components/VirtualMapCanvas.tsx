@@ -29,8 +29,8 @@ export function VirtualMapCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Viewport transforms:
-  // scale: pixels per meter (default e.g. 24px per meter)
-  const [scale, setScale] = useState<number>(24);
+  // scale: pixels per centimeter (default 2.5px per cm, i.e. 250px per meter)
+  const [scale, setScale] = useState<number>(2.5);
   const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [autoFollow, setAutoFollow] = useState<boolean>(true);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -40,11 +40,9 @@ export function VirtualMapCanvas({
   // Center on current device
   const centerOnDevice = useCallback(() => {
     if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    // Map coords: (0,0) is origin. Current device is at (navState.x, navState.y)
+    // Map coords: (0,0) is origin. Current device is at (navState.x, navState.y) in cm
     // Canvas pixel X = centerX + offset.x + navState.x * scale
     // Canvas pixel Y = centerY + offset.y - navState.y * scale
-    // To center: offset.x = -navState.x * scale, offset.y = navState.y * scale
     setOffset({
       x: -navState.x * scale,
       y: navState.y * scale,
@@ -54,14 +52,14 @@ export function VirtualMapCanvas({
   // Reset entire map view to origin (0,0)
   const resetMapView = useCallback(() => {
     setOffset({ x: 0, y: 0 });
-    setScale(24);
+    setScale(2.5);
     setAutoFollow(true);
   }, []);
 
   const handleZoom = useCallback((factor: number) => {
     setScale((prev) => {
       const next = prev * factor;
-      return Math.min(120, Math.max(6, next));
+      return Math.min(15.0, Math.max(0.2, next));
     });
   }, []);
 
@@ -130,50 +128,52 @@ export function VirtualMapCanvas({
     const centerX = width / 2 + offset.x;
     const centerY = height / 2 + offset.y;
 
-    // Metric coordinate conversion:
+    // Centimeter coordinate conversion:
     // +X is East (right), +Y is North (up, -canvasY)
-    const toScreenX = (xMeters: number) => centerX + xMeters * scale;
-    const toScreenY = (yMeters: number) => centerY - yMeters * scale;
+    const toScreenX = (xCm: number) => centerX + xCm * scale;
+    const toScreenY = (yCm: number) => centerY - yCm * scale;
 
-    // Determine grid spacing based on zoom level
-    let gridStepMeters = 5;
-    if (scale >= 50) gridStepMeters = 1;
-    else if (scale >= 20) gridStepMeters = 2;
-    else if (scale >= 10) gridStepMeters = 5;
-    else gridStepMeters = 10;
+    // Determine grid spacing based on zoom level (in centimeters)
+    let gridStepCm = 25;
+    if (scale >= 6.0) gridStepCm = 5;
+    else if (scale >= 3.0) gridStepCm = 10;
+    else if (scale >= 1.5) gridStepCm = 25;
+    else if (scale >= 0.6) gridStepCm = 50;
+    else gridStepCm = 100;
 
-    const startXMeter = Math.floor((-centerX) / (scale * gridStepMeters)) * gridStepMeters;
-    const endXMeter = Math.ceil((width - centerX) / (scale * gridStepMeters)) * gridStepMeters;
-    const startYMeter = Math.floor((centerY - height) / (scale * gridStepMeters)) * gridStepMeters;
-    const endYMeter = Math.ceil(centerY / (scale * gridStepMeters)) * gridStepMeters;
+    const startXCm = Math.floor((-centerX) / (scale * gridStepCm)) * gridStepCm;
+    const endXCm = Math.ceil((width - centerX) / (scale * gridStepCm)) * gridStepCm;
+    const startYCm = Math.floor((centerY - height) / (scale * gridStepCm)) * gridStepCm;
+    const endYCm = Math.ceil(centerY / (scale * gridStepCm)) * gridStepCm;
 
-    // Draw Sub-grid lines
+    // Draw Sub-grid lines (every gridStepCm)
     ctx.strokeStyle = "#162032";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    for (let xM = startXMeter; xM <= endXMeter; xM += gridStepMeters) {
-      const scrX = toScreenX(xM);
+    for (let xC = startXCm; xC <= endXCm; xC += gridStepCm) {
+      const scrX = toScreenX(xC);
       ctx.moveTo(scrX, 0);
       ctx.lineTo(scrX, height);
     }
-    for (let yM = startYMeter; yM <= endYMeter; yM += gridStepMeters) {
-      const scrY = toScreenY(yM);
+    for (let yC = startYCm; yC <= endYCm; yC += gridStepCm) {
+      const scrY = toScreenY(yC);
       ctx.moveTo(0, scrY);
       ctx.lineTo(width, scrY);
     }
     ctx.stroke();
 
-    // Major 10m grid lines
+    // Major grid lines (every 50cm, 100cm, or 200cm)
+    const majorStepCm = gridStepCm <= 10 ? 50 : gridStepCm <= 25 ? 100 : 200;
     ctx.strokeStyle = "#22314d";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    for (let xM = Math.floor(startXMeter / 10) * 10; xM <= endXMeter; xM += 10) {
-      const scrX = toScreenX(xM);
+    for (let xC = Math.floor(startXCm / majorStepCm) * majorStepCm; xC <= endXCm; xC += majorStepCm) {
+      const scrX = toScreenX(xC);
       ctx.moveTo(scrX, 0);
       ctx.lineTo(scrX, height);
     }
-    for (let yM = Math.floor(startYMeter / 10) * 10; yM <= endYMeter; yM += 10) {
-      const scrY = toScreenY(yM);
+    for (let yC = Math.floor(startYCm / majorStepCm) * majorStepCm; yC <= endYCm; yC += majorStepCm) {
+      const scrY = toScreenY(yC);
       ctx.moveTo(0, scrY);
       ctx.lineTo(width, scrY);
     }
@@ -209,26 +209,26 @@ export function VirtualMapCanvas({
     ctx.closePath();
     ctx.fill();
 
-    // Grid Numerical Labels
+    // Grid Numerical Labels (in centimeters)
     ctx.font = "10px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.fillStyle = "#64748b";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
 
     // X-Axis tick labels
-    for (let xM = startXMeter; xM <= endXMeter; xM += gridStepMeters) {
-      if (xM === 0) continue;
-      const scrX = toScreenX(xM);
-      ctx.fillText(`${xM}m`, scrX, Math.min(Math.max(centerY + 4, 18), height - 20));
+    for (let xC = startXCm; xC <= endXCm; xC += gridStepCm) {
+      if (xC === 0) continue;
+      const scrX = toScreenX(xC);
+      ctx.fillText(`${xC}cm`, scrX, Math.min(Math.max(centerY + 4, 18), height - 20));
     }
 
     // Y-Axis tick labels
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
-    for (let yM = startYMeter; yM <= endYMeter; yM += gridStepMeters) {
-      if (yM === 0) continue;
-      const scrY = toScreenY(yM);
-      ctx.fillText(`${yM}m`, Math.min(Math.max(centerX - 6, 40), width - 10), scrY);
+    for (let yC = startYCm; yC <= endYCm; yC += gridStepCm) {
+      if (yC === 0) continue;
+      const scrY = toScreenY(yC);
+      ctx.fillText(`${yC}cm`, Math.min(Math.max(centerX - 6, 46), width - 10), scrY);
     }
 
     // Axis Orientation Titles
@@ -378,8 +378,8 @@ export function VirtualMapCanvas({
     ctx.lineTo(ptrTipX, ptrTipY);
     ctx.stroke();
 
-    // Current coordinates badge
-    const badgeText = `${navState.deviceId} (${navState.x >= 0 ? "+" : ""}${navState.x}m, ${navState.y >= 0 ? "+" : ""}${navState.y}m)`;
+    // Current coordinates badge (in centimeters)
+    const badgeText = `${navState.deviceId} (${navState.x >= 0 ? "+" : ""}${navState.x.toFixed(1)}cm, ${navState.y >= 0 ? "+" : ""}${navState.y.toFixed(1)}cm)`;
     ctx.font = "bold 10px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.fillStyle = "#1e293b";
     ctx.strokeStyle = isOnline ? "#d97706" : "#dc2626";
@@ -400,8 +400,8 @@ export function VirtualMapCanvas({
     ctx.textBaseline = "middle";
     ctx.fillText(badgeText, devX, bY + bH / 2);
 
-    // --- BOTTOM-LEFT METRIC SCALE RULER ---
-    const rulerPixelWidth = scale * gridStepMeters;
+    // --- BOTTOM-LEFT CENTIMETER SCALE RULER ---
+    const rulerPixelWidth = scale * gridStepCm;
     const rulerX = 20;
     const rulerY = height - 25;
 
@@ -421,7 +421,7 @@ export function VirtualMapCanvas({
     ctx.fillStyle = "#cbd5e1";
     ctx.textAlign = "center";
     ctx.textBaseline = "bottom";
-    ctx.fillText(`${gridStepMeters} meters`, rulerX + rulerPixelWidth / 2, rulerY - 4);
+    ctx.fillText(`${gridStepCm} cm`, rulerX + rulerPixelWidth / 2, rulerY - 4);
 
     ctx.restore();
   }, [offset, scale, trajectory, navState, isOnline]);
@@ -447,7 +447,9 @@ export function VirtualMapCanvas({
         <span className="font-bold text-sky-300">{navState.heading.toFixed(1)}°</span>
         <span className="text-slate-600">|</span>
         <span>SCALE:</span>
-        <span className="text-slate-200">{scale.toFixed(0)}px/m</span>
+        <span className="text-slate-200">{scale.toFixed(1)}px/cm</span>
+        <span className="text-slate-600">|</span>
+        <span className="text-sky-300 font-semibold">UNIT: cm</span>
       </div>
 
       {/* Top Right Map Floating Controls */}

@@ -53,7 +53,7 @@ export default function App() {
               </span>
             </div>
             <p className="text-xs text-slate-400 font-mono">
-              Raw 16-bit IMU Wi-Fi Ingestion & Local 2D Cartesian Trajectory Dashboard
+              Raw 16-bit IMU Wi-Fi Ingestion & Local 2D Cartesian Trajectory Dashboard (cm)
             </p>
           </div>
         </div>
@@ -116,6 +116,10 @@ export default function App() {
             <div className="pt-1 flex items-center justify-between text-[10px] text-slate-500">
               <span>Coordinate Frame:</span>
               <span className="text-slate-300">Origin (0,0) = START</span>
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-slate-500">
+              <span>Position Units:</span>
+              <span className="text-sky-300 font-bold">Centimeters (cm)</span>
             </div>
           </div>
         </div>

@@ -524,17 +524,17 @@ Content-Type: application/json
 
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
                 <div className="text-xs font-bold text-emerald-400">2. WebSocket Broadcast: /ws</div>
-                <div className="text-[11px] text-slate-400">Live position message broadcast to browser canvas:</div>
+                <div className="text-[11px] text-slate-400">Live position message broadcast to browser canvas (in centimeters):</div>
                 <pre className="p-2.5 bg-slate-900 rounded border border-slate-800 text-[11px] text-slate-200">
 {`{
   "type": "position",
   "deviceId": "helmet-01",
-  "x": 14.72,
-  "y": 8.31,
+  "x": 147.2,
+  "y": 83.1,
   "heading": 74.2,
   "timestamp": 123456789,
-  "speed": 0.85,
-  "distance": 16.90
+  "speed": 65.0,
+  "distance": 169.0
 }`}
                 </pre>
               </div>
@@ -544,11 +544,11 @@ Content-Type: application/json
           {activeTab === "math_explanation" && (
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 text-[11px] text-slate-300 leading-relaxed">
               <h3 className="text-xs font-bold text-sky-400">
-                How Raw MPU6050 Values Become Estimated X/Y Coordinates
+                How Raw MPU6050 Values Become Estimated X/Y Coordinates (Centimeters)
               </h3>
               <p>
                 The MPU6050 measures acceleration (Ax, Ay, Az in LSB) and angular velocity (Gx, Gy, Gz in LSB),
-                not position. The navigation engine converts raw readings through dead-reckoning:
+                not position. The navigation engine converts raw readings through dead-reckoning calibrated in centimeters (cm):
               </p>
 
               <div className="space-y-2 pl-2 border-l-2 border-sky-500/50">
@@ -565,20 +565,20 @@ Content-Type: application/json
                 </div>
 
                 <div>
-                  <strong className="text-sky-400">2. Accelerometer to Step / Motion Displacement:</strong>
+                  <strong className="text-sky-400">2. Accelerometer to Step / Motion Displacement (Centimeters):</strong>
                   <br />
                   Acceleration magnitude |A| = sqrt(Ax² + Ay² + Az²) / 16384.0 (in units of g, ~1.0g at rest).
                   <br />
                   Dynamic acceleration = ||A| - 1.0|. Peak detection with a refractory window identifies human/helmet
-                  footsteps (Pedestrian Dead Reckoning). Step length L ≈ 0.65m - 0.80m.
+                  footsteps (Pedestrian Dead Reckoning) or benchtop micro-motions. Displacement L ≈ 45cm - 75cm per step (or 5cm - 25cm continuous motion).
                 </div>
 
                 <div>
-                  <strong className="text-emerald-400">3. 2D Coordinate Update:</strong>
+                  <strong className="text-emerald-400">3. 2D Coordinate Update (in Centimeters):</strong>
                   <br />
-                  ΔX = L × sin(heading × π / 180) [East / West]
+                  ΔX = L × sin(heading × π / 180) [East / West in cm]
                   <br />
-                  ΔY = L × cos(heading × π / 180) [North / South]
+                  ΔY = L × cos(heading × π / 180) [North / South in cm]
                   <br />
                   X_new = X_prev + ΔX, Y_new = Y_prev + ΔY.
                 </div>
