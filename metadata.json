@@ -1,0 +1,6 @@
+{
+  "name": "ESP32 MPU6050 2D Virtual Navigation Map",
+  "description": "Real-time 2D underground virtual navigation map and telemetry dashboard powered by raw ESP32 MPU6050 sensor data via Wi-Fi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
