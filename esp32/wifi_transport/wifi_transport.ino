@@ -22,13 +22,13 @@
 // 1. NETWORK & BACKEND CONFIGURATION
 // ==========================================
 // Replace with your local Wi-Fi credentials
-const char* WIFI_SSID = "YOUR_WIFI_SSID";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID = "Vamshi";
+const char* WIFI_PASSWORD = "virat@18";
 
 // Backend API endpoint URL. 
 // If running on local network, use your computer's local IP (e.g., http://192.168.1.100:3000/api/mpu)
 // Or use your deployed cloud backend URL (e.g., https://your-app.run.app/api/mpu)
-const char* BACKEND_URL = "http://192.168.1.100:3000/api/mpu";
+const char* BACKEND_URL = "http://192.168.29.248:3000/api/mpu";
 
 // Device Identifier (e.g. "helmet-01", "miner-01")
 const char* DEVICE_ID = "helmet-01";
